@@ -1,6 +1,9 @@
 # Channel-based Structured Pruning Adapters Experiments
 
 <div align="left">
+<a href="https://arxiv.org/abs/2211.10155">
+    <img src="http://img.shields.io/badge/paper-arxiv.2211.10155-B31B1B.svg" height="20" >
+  </a>
   <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
     <img src="https://img.shields.io/static/v1?label=License&message=CC-BY-NC-SA 4.0&color=blue" height="20">
   </a>
