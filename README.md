@@ -13,7 +13,7 @@
 </div>
 
 <div align="center">
-  <img src="figures/splora.svg" width="350", height="200"><br>
+  <img src="https://github.com/LukasHedegaard/structured-pruning-adapters/blob/d8abecef1e0039897e7a37a0a2e7dde21b06085e/figures/SPLoRA.png" height="200"><br>
 </div>
 
 This repository contains experiments for the channel-based SPA, __Structured Pruning Low-rank Adapter (SPLoRA)__, proposed in `link-to-paper-comping-up` using various structured pruning methods, for weight-based transfer learning on image classification tasks. 
