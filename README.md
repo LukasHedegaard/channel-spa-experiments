@@ -1,7 +1,7 @@
 # Channel-based Structured Pruning Adapters Experiments
 
 <div align="left">
-<a href="https://arxiv.org/abs/2211.10155">
+  <a href="https://arxiv.org/abs/2211.10155">
     <img src="http://img.shields.io/badge/paper-arxiv.2211.10155-B31B1B.svg" height="20" >
   </a>
   <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
@@ -16,7 +16,7 @@
   <img src="https://github.com/LukasHedegaard/structured-pruning-adapters/blob/d8abecef1e0039897e7a37a0a2e7dde21b06085e/figures/SPLoRA.png" height="200"><br>
 </div>
 
-This repository contains experiments for the channel-based SPA, __Structured Pruning Low-rank Adapter (SPLoRA)__, proposed in `link-to-paper-comping-up` using various structured pruning methods, for weight-based transfer learning on image classification tasks. 
+This repository contains experiments for the channel-based SPA, __Structured Pruning Low-rank Adapter (SPLoRA)__, proposed in [Structured Pruning Adapters](https://arxiv.org/abs/2211.10155) using various structured pruning methods, for weight-based transfer learning on image classification tasks. 
 
 
 ## Installation ⚙️
