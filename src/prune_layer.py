@@ -2,6 +2,8 @@ import numpy as np
 import torch
 from torch.nn.utils import prune as torch_prune
 
+from warnings import warn
+
 # def prune_conv_layer(
 #     model, layer_index, filter_index, criterion="lrp", cuda_flag=False
 # ):
@@ -52,9 +54,19 @@ def prune_conv_layer(
         conv.output_mask = torch.ones(conv.weight.shape[0])
 
     filter_inds = torch.tensor(filter_inds)
-    assert conv.output_mask[filter_inds].sum() == len(
-        filter_inds
-    ), "filter_inds must not contain pruned filters"
+
+    # If a repeat pruning of a filter occured (it shouldn't though) throw a warning
+    num_repeat_prunes = len(filter_inds) - conv.output_mask[filter_inds].sum()
+    if num_repeat_prunes > 0:
+        warn(
+            f"Trying to prune {num_repeat_prunes} filters twice in layer {layer_index}"
+        )
+    if conv.output_mask.sum() == conv.output_mask[filter_inds].sum():
+        warn(
+            "Trying to prune last filter in a layer. Leaving one filter behind instead"
+        )
+        filter_inds = filter_inds[:-1]
+
     conv.output_mask[filter_inds] = 0
 
     mask_weight = conv.output_mask.view(-1, 1, 1, 1).expand_as(conv.weight)
