@@ -12,7 +12,23 @@ cfg = {
 # fmt: on
 
 
-def Vgg16(num_classes=10):
+def EfficientNetV2_s(num_classes=10, *args, **kwargs):
+    model = models.efficientnet_v2_s(pretrained=True)
+    model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, num_classes)
+    # for param in model.features.parameters():
+    #     param.requires_grad = False
+    return model
+
+
+def EfficientNetV2_m(num_classes=10, *args, **kwargs):
+    model = models.efficientnet_v2_m(pretrained=True)
+    model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, num_classes)
+    # for param in model.features.parameters():
+    #     param.requires_grad = False
+    return model
+
+
+def Vgg16(num_classes=10, *args, **kwargs):
     model = models.__dict__["vgg16"](pretrained=True)
     model.classifier[-1] = nn.Linear(4096, num_classes)
     for param in model.features.parameters():
@@ -102,7 +118,7 @@ class Bottleneck(nn.Module):
 
 
 class ResNet(nn.Module):
-    def __init__(self, block, num_blocks, num_classes=10, miniaturize_conv1=True):
+    def __init__(self, block, num_blocks, num_classes=10, miniaturize_conv1=False):
         super(ResNet, self).__init__()
         self.in_planes = 64
 

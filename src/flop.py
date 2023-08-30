@@ -38,7 +38,10 @@ def get_model_parameters_number_value_mask(model, as_string=False):
         if isinstance(mod, nn.BatchNorm2d):
             norm_count += sum(p.numel() for p in mod.parameters())
         if isinstance(mod, nn.Linear):
-            lin_count += sum(p.numel() for p in mod.parameters())
+            if hasattr(mod, "adapter") and hasattr(mod.adapter, "rank"):  # SPLoRA
+                lin_count += mod.adapter.rank * sum(mod.weight.shape)
+            else:
+                lin_count += sum(p.numel() for p in mod.parameters())
         if isinstance(mod, nn.Conv2d):
             if hasattr(mod, "output_mask"):
                 n_out_channels = len(torch.where(mod.output_mask == 1)[0])
@@ -49,7 +52,12 @@ def get_model_parameters_number_value_mask(model, as_string=False):
                 ):
                     n_in_channels = len(torch.where(prev_output_mask == 1)[0])
                 if hasattr(mod, "adapter"):
-                    conv_count += mod.adapter.rank * (n_out_channels + n_in_channels)
+                    if hasattr(mod.adapter, "rank"):  # SPLoRA
+                        conv_count += mod.adapter.rank * (
+                            n_out_channels + n_in_channels
+                        )
+                    else:  # SPPaRA
+                        conv_count += n_out_channels * n_in_channels
                 else:
                     conv_count += (
                         n_out_channels

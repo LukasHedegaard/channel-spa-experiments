@@ -7,32 +7,55 @@
 from __future__ import print_function
 
 import argparse
+from time import sleep
 
 import torch
-from time import sleep
-import src.prune_resnet as modules_resnet
-import src.prune_vgg as modules_vgg
-from src.data import NUM_CLASSES
-from src.network import Alexnet, ResNet18, ResNet50, Vgg16
-from sp_adapters import SPLoRA
+from sp_adapters import SPLoRA, SPPaRA
 from sp_adapters.splora import SPLoRAConv2d
+
+import src.prune_resnet as modules_resnet
+from src.data import NUM_CLASSES
+from src.network import (
+    Alexnet,
+    ResNet18,
+    ResNet50,
+    Vgg16,
+    EfficientNetV2_s,
+    EfficientNetV2_m,
+)
 
 
 def get_args():
     # Training settings
-    parser = argparse.ArgumentParser(description="Structured Pruning of Image Classifiers")
+    parser = argparse.ArgumentParser(
+        description="Structured Pruning of Image Classifiers"
+    )
 
     parser.add_argument(
         "--arch",
         default="resnet50",
-        help="model architecture: resnet18, resnet50, vgg16, alexnet",
-        choices=["resnet18", "resnet50", "vgg16", "alexnet"],
+        help="model architecture: resnet18, resnet50, vgg16, alexnet, efficientnet_v2_s, efficientnet_v2_m",
+        choices=[
+            "resnet18",
+            "resnet50",
+            "vgg16",
+            "alexnet",
+            "efficientnet_v2_s",
+            "efficientnet_v2_m",
+        ],
     )
     parser.add_argument(
         "--batch-size",
         type=int,
         default=64,
         help="input batch size",
+    )
+    parser.add_argument(
+        "--optimizer",
+        type=str,
+        default="sgd",
+        help="Optimizer type",
+        choices=["sgd", "rmsprop"]
     )
     parser.add_argument("--trialnum", type=int, default=1, help="trial number")
     parser.add_argument(
@@ -113,7 +136,13 @@ def get_args():
         type=str,
         default="cifar10",
         help="model architecture selection",
-        choices=["cifar10", "catsanddogs", "oxfordflowers102"],
+        choices=[
+            "cifar10",
+            "catsanddogs",
+            "oxfordflowers102",
+            "cifar100",
+            "stanfordcars",
+        ],
     )
     parser.add_argument(
         "--splora",
@@ -132,6 +161,11 @@ def get_args():
         default=1e-3,
         help="Initialisation range of Structured Pruning Low-rank Adapter (SPLoRA).",
     )
+    parser.add_argument(
+        "--sppara",
+        action="store_true",
+        help="Use Structured Pruning Parallel Residual Adapter (SPPaRA) for training",
+    )
 
     args = parser.parse_args()
     args.cuda = not args.no_cuda and torch.cuda.is_available()
@@ -142,13 +176,34 @@ def get_args():
 if __name__ == "__main__":
     args = get_args()
 
-    model = {"alexnet": Alexnet, "vgg16": Vgg16, "resnet18": ResNet18, "resnet50": ResNet50,}[
-        args.arch.lower()
-    ](NUM_CLASSES[args.dataset], miniaturize_conv1=(args.dataset == "cifar10"))
+    model = {
+        "alexnet": Alexnet,
+        "vgg16": Vgg16,
+        "resnet18": ResNet18,
+        "resnet50": ResNet50,
+        "efficientnet_v2_s": EfficientNetV2_s,
+        "efficientnet_v2_m": EfficientNetV2_m,
+    }[args.arch.lower()](
+        NUM_CLASSES[args.dataset], miniaturize_conv1=("cifar" in args.dataset)
+    )
     if args.splora:
+        replacements = [(torch.nn.Conv2d, SPLoRAConv2d)]
+        # if args.arch.lower() in {"alexnet", "vgg16"}:
+        #     replacements = [(torch.nn.Conv2d, SPLoRAConv2d), (torch.nn.Linear, SPLoRALinear)]
+
         model = SPLoRA(
             model,
             rank=args.splora_rank,
+            init_range=args.splora_init_range,
+            replacements=replacements,
+        )
+        # Reinit last layer, which might have been replaced by SPLoRA
+        # if args.arch.lower() in {"alexnet", "vgg16"}:
+        #     model.classifier[-1] = torch.nn.Linear(4096, NUM_CLASSES[args.dataset])
+
+    if args.sppara:
+        model = SPPaRA(
+            model,
             init_range=args.splora_init_range,
             replacements=[(torch.nn.Conv2d, SPLoRAConv2d)],
         )
@@ -159,10 +214,13 @@ if __name__ == "__main__":
     if args.cuda:
         model = model.cuda()
 
-    if args.arch.lower() in ["resnet18", "resnet50"]:
-        fine_tuner = modules_resnet.PruningFineTuner(args, model)
-    elif args.arch.lower() in ["vgg16", "alexnet"]:
-        fine_tuner = modules_vgg.PruningFineTuner(args, model)
+    if args.arch.lower() not in ["resnet18", "resnet50"]:
+        assert args.method_type in {
+            "grad",
+            "taylor",
+        }, "Only pruning methods 'taylor' and 'weight' are currently supported for non-resnet architectures."
+
+    fine_tuner = modules_resnet.PruningFineTuner(args, model)
 
     if args.train:
         print(
