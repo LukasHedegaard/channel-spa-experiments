@@ -6,5 +6,4 @@ wandb~=0.13
 coloredlogs~=15.0
 datasetops
 tqdm
-structured-pruning-adapters
 torch-pruning

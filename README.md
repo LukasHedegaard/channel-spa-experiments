@@ -13,7 +13,7 @@
 </div>
 
 <div align="center">
-  <img src="https://github.com/LukasHedegaard/structured-pruning-adapters/blob/d8abecef1e0039897e7a37a0a2e7dde21b06085e/figures/SPLoRA.png" height="200"><br>
+  <img src="figures/SPLoRA.svg" height="200"><br>
 </div>
 
 This repository contains experiments for the channel-based SPA, __Structured Pruning Low-rank Adapter (SPLoRA)__, proposed in [Structured Pruning Adapters](https://arxiv.org/abs/2211.10155) using various structured pruning methods, for weight-based transfer learning on image classification tasks. 
@@ -22,7 +22,6 @@ This repository contains experiments for the channel-based SPA, __Structured Pru
 ## Installation ⚙️
 - Clone this repository and enter it: 
     ```bash
-    git clone https://github.com/LukasHedegaard/channel-spa-experiments.git
     cd channel-spa-experiments
     ```
 - (Optionally) create conda environment:
@@ -33,6 +32,7 @@ This repository contains experiments for the channel-based SPA, __Structured Pru
     ```bash
     pip install -e .[dev]
     ```
+- Install the `structured-pruning-adapters` library by entering it and executing `"pip install -e ."`.
 
 ## Run training + pruning 🏃‍♂️
 Please see the `scripts` folder for the scripts used in our experiments. Below, you will find the command-line arguments for selecting splora (argument: `"--splora"`) and each of the explored pruning methods (argument:`"--method-type"`, choices: `["weight", "grad", "taylor", "lrp"]`).
