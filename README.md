@@ -90,7 +90,7 @@ Below you find some results achieved using this repository.
 
 Compared to regular structured pruning with fine-tuning, our channel-SPA improves accuracy by 6.9% on average while using half the parameters at 90% pruned weights. Alternatively, it can learn adaptations with 17x fewer parameters at 70% pruning with 1.6% lower accuracy.
 
-Please see the paper for more details `link-to-paper-comping-up`.
+Please see the paper for more details.
 
 <div align="center">
   <img src="figures/results.png" width="1000"><br>
